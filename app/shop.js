@@ -125,6 +125,7 @@ export default function Shop() {
         }
 
         const data = await response.json();
+        alert("Produk dari Supabase: " + data.length);
 
         if (Array.isArray(data) && data.length > 0) {
           setProducts(data);
