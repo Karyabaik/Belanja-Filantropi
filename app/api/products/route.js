@@ -5,8 +5,27 @@ export async function GET() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey =
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-console.log("SUPABASE URL:", supabaseUrl);
-console.log("SUPABASE KEY EXISTS:", !!supabaseKey);
+
+    // Cek environment variable
+    if (!supabaseUrl) {
+      return Response.json(
+        {
+          error: "NEXT_PUBLIC_SUPABASE_URL belum tersedia",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!supabaseKey) {
+      return Response.json(
+        {
+          error:
+            "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY belum tersedia",
+        },
+        { status: 500 }
+      );
+    }
+
     const supabase = createClient(
       supabaseUrl,
       supabaseKey
@@ -16,25 +35,35 @@ console.log("SUPABASE KEY EXISTS:", !!supabaseKey);
       .from("products")
       .select("*")
       .eq("is_active", true)
-      .order("created_at", { ascending: false });
+      .order("created_at", {
+        ascending: false,
+      });
 
     if (error) {
+      console.error("Supabase error:", error);
+
       return Response.json(
-        { error: error.message },
+        {
+          error: error.message,
+        },
         { status: 500 }
       );
     }
 
-    return Response.json(data);
- } catch (error) {
-  console.error("ERROR:", error);
+    return Response.json(data, {
+      status: 200,
+    });
+  } catch (error) {
+    console.error("API error:", error);
 
-  return Response.json(
-    {
-      error: error instanceof Error
-        ? error.message
-        : String(error),
-    },
-    { status: 500 }
-  );
-} 
+    return Response.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Gagal mengambil produk",
+      },
+      { status: 500 }
+    );
+  }
+}
