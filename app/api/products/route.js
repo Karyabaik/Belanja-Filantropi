@@ -5,7 +5,8 @@ export async function GET() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey =
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
+console.log("SUPABASE URL:", supabaseUrl);
+console.log("SUPABASE KEY EXISTS:", !!supabaseKey);
     const supabase = createClient(
       supabaseUrl,
       supabaseKey
@@ -25,10 +26,15 @@ export async function GET() {
     }
 
     return Response.json(data);
-  } catch (error) {
-    return Response.json(
-      { error: "Gagal mengambil produk" },
-      { status: 500 }
-    );
-  }
-}
+ } catch (error) {
+  console.error("ERROR:", error);
+
+  return Response.json(
+    {
+      error: error instanceof Error
+        ? error.message
+        : String(error),
+    },
+    { status: 500 }
+  );
+} 
