@@ -188,7 +188,10 @@ export default function Home() {
           <div className="product-grid">
             {filteredProducts.map((product) => (
               <article className="product-card" key={product.id}>
-                <img src={product.image} alt={product.name} />
+                <img
+  src={product.image_url || product.image}
+  alt={product.name}
+/>
 
                 <div className="product-content">
                   <span className="marketplace">
