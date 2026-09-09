@@ -130,7 +130,9 @@ export default function Shop() {
           setProducts(data);
         }
       } catch (error) {
-        console.error("Product loading error:", error);
+  console.error("Product loading error:", error);
+  alert("Gagal mengambil produk: " + error.message);
+}
       } finally {
         setLoading(false);
       }
