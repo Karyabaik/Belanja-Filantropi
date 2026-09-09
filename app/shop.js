@@ -111,7 +111,7 @@ export default function Shop() {
         }
 
         const response = await fetch(
-          `${supabaseUrl}/rest/v1/products?active=eq.true&order=created_at.desc`,
+          `${supabaseUrl}/rest/v1/products?is_active=eq.true&order=created_at.desc`,
           {
             headers: {
               apikey: supabaseKey,
@@ -240,7 +240,7 @@ export default function Shop() {
               <div className="product-image-wrap">
                 <img
                   src={
-                    product.image ||
+                    product.image_url ||
                     "https://placehold.co/600x600?text=Belanja+Baik"
                   }
                   alt={product.name}
