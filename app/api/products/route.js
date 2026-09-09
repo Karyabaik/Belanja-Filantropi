@@ -1,170 +1,68 @@
-import { createClient } from "@supabase/supabase-js";
-
-function getSupabase() {
-const supabaseUrl =
-process.env.NEXT_PUBLIC_SUPABASE_URL;
-
-const supabaseKey =
-process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-if (!supabaseUrl) {
-throw new Error(
-"NEXT_PUBLIC_SUPABASE_URL belum tersedia"
-);
-}
-
-if (!supabaseKey) {
-throw new Error(
-"NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY belum tersedia"
-);
-}
-
-return createClient(
-supabaseUrl,
-supabaseKey
-);
-}
-
-// GET PRODUCTS
 export async function GET() {
-try {
-const supabase = getSupabase();
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-```
-const { data, error } = await supabase
-  .from("products")
-  .select("*")
-  .eq("is_active", true)
-  .order("created_at", {
-    ascending: false,
-  });
+    if (!supabaseUrl) {
+      return Response.json(
+        { error: "NEXT_PUBLIC_SUPABASE_URL tidak tersedia di Vercel" },
+        { status: 500 }
+      );
+    }
 
-if (error) {
-  console.error(
-    "Supabase GET Error:",
-    error
-  );
+    if (!supabaseKey) {
+      return Response.json(
+        { error: "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY tidak tersedia di Vercel" },
+        { status: 500 }
+      );
+    }
 
-  return Response.json(
-    {
-      error: error.message,
-    },
-    { status: 500 }
-  );
-}
+    const url =
+      `${supabaseUrl}/rest/v1/products` +
+      `?select=*` +
+      `&is_active=eq.true` +
+      `&order=created_at.desc`;
 
-return Response.json(data || [], {
-  status: 200,
-});
-```
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
 
-} catch (error) {
-console.error(
-"Products GET Error:",
-error
-);
+    const text = await response.text();
 
-```
-return Response.json(
-  {
-    error:
-      error instanceof Error
-        ? error.message
-        : "Gagal mengambil produk",
-  },
-  { status: 500 }
-);
-```
+    if (!response.ok) {
+      return Response.json(
+        {
+          error: "Supabase mengembalikan error",
+          status: response.status,
+          detail: text,
+        },
+        { status: 500 }
+      );
+    }
 
-}
-}
+    const data = JSON.parse(text);
 
-// ADD PRODUCT
-export async function POST(request) {
-try {
-const supabase = getSupabase();
+    return Response.json(data, {
+      status: 200,
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
+  } catch (error) {
+    console.error("API PRODUCTS ERROR:", error);
 
-```
-const body = await request.json();
-
-if (
-  !body.name ||
-  !body.affiliate_url
-) {
-  return Response.json(
-    {
-      error:
-        "Nama produk dan affiliate URL wajib diisi",
-    },
-    { status: 400 }
-  );
-}
-
-const { data, error } =
-  await supabase
-    .from("products")
-    .insert({
-      name: body.name,
-      affiliate_url:
-        body.affiliate_url,
-      description:
-        body.description || null,
-      image_url:
-        body.image_url || null,
-      price:
-        body.price ?? null,
-      marketplace:
-        body.marketplace || null,
-      commission_rate:
-        body.commission_rate ?? 0,
-      is_active:
-        body.is_active ?? true,
-    })
-    .select()
-    .single();
-
-if (error) {
-  console.error(
-    "Supabase POST Error:",
-    error
-  );
-
-  return Response.json(
-    {
-      error: error.message,
-    },
-    { status: 500 }
-  );
-}
-
-return Response.json(
-  {
-    success: true,
-    message:
-      "Produk berhasil ditambahkan",
-    product: data,
-  },
-  { status: 201 }
-);
-```
-
-} catch (error) {
-console.error(
-"Products POST Error:",
-error
-);
-
-```
-return Response.json(
-  {
-    error:
-      error instanceof Error
-        ? error.message
-        : "Gagal menambahkan produk",
-  },
-  { status: 500 }
-);
-```
-
-}
+    return Response.json(
+      {
+        error: "Gagal mengambil produk",
+        detail: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
 }
